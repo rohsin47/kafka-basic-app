@@ -3,18 +3,18 @@
  */
 package com.bfm.kafka;
 
+import com.bfm.kafka.consumer.ProtobufConsumer;
+import com.bfm.kafka.producer.ProtobufProducer;
+
 /**
  * @author rohsi
  *
  */
 public class App {
-
-	/**
-	 * @param args
-	 */
+	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+		ProtobufProducer producer = new ProtobufProducer();
+		ProtobufConsumer consumer = new ProtobufConsumer();
 	}
 
 }
