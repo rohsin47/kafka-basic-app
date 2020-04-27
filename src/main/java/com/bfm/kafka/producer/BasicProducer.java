@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class BasicProducer<K extends Serializable, V extends Serializable> {
-	
+
 	private final Logger logger = LoggerFactory.getLogger(BasicProducer.class);
 
 	private KafkaProducer<K, V> producer;
@@ -32,19 +32,19 @@ public class BasicProducer<K extends Serializable, V extends Serializable> {
 	}
 
 	public void send(String topic, V v) {
-		send(topic, -1, null, v, new DummyCallback());
+		send(topic, -1, null, v, new DefaultCallback());
 	}
 
 	public void send(String topic, K k, V v) {
-		send(topic, -1, k, v, new DummyCallback());
+		send(topic, -1, k, v, new DefaultCallback());
 	}
 
 	public void send(String topic, int partition, V v) {
-		send(topic, partition, null, v, new DummyCallback());
+		send(topic, partition, null, v, new DefaultCallback());
 	}
 
 	public void send(String topic, int partition, K k, V v) {
-		send(topic, partition, k, v, new DummyCallback());
+		send(topic, partition, k, v, new DefaultCallback());
 	}
 
 	public void send(String topic, int partition, K key, V value, Callback callback) {
@@ -65,13 +65,30 @@ public class BasicProducer<K extends Serializable, V extends Serializable> {
 		}
 	}
 	
-	private class DummyCallback implements Callback {
-		
-        public void onCompletion(RecordMetadata recordMetadata, Exception e) {
-            if (e != null) {
-                logger.error("Error while producing message to topic : {}", recordMetadata.topic(), e);
-            } else
-                logger.debug("sent message to topic:{} partition:{}  offset:{}", recordMetadata.topic(), recordMetadata.partition(), recordMetadata.offset());
-        }
-    }
+	public void flush() {
+		try {
+			producer.flush();
+		} catch (Exception e) {
+			logger.error("Exception occurred while stopping the producer", e);
+		}
+	}
+
+	public void close() {
+		try {
+			producer.close();
+		} catch (Exception e) {
+			logger.error("Exception occurred while stopping the producer", e);
+		}
+	}
+
+	private class DefaultCallback implements Callback {
+
+		public void onCompletion(RecordMetadata recordMetadata, Exception e) {
+			if (e != null) {
+				logger.error("Error while producing message to topic : {}", recordMetadata.topic(), e);
+			} else
+				logger.debug("sent message to topic:{} partition:{}  offset:{}", recordMetadata.topic(),
+						recordMetadata.partition(), recordMetadata.offset());
+		}
+	}
 }
