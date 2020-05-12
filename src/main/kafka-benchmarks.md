@@ -12,7 +12,7 @@ bin/kafka-topics.sh \
   --partitions 3 --replication-factor 3
 ```
 
-# Producer Throughput: Three producer thread, no replication, no compression
+## Producer Throughput: Three producer thread, no replication, no compression
 
 ```sh
 bin/kafka-producer-perf-test.sh --topic rep_perf_test \
@@ -27,7 +27,7 @@ compression.type=none \
 batch.size=8196
 ```
 
-# Producer Throughput: Three producer thread, no replication, zstandard compression
+## Producer Throughput: Three producer thread, no replication, zstandard compression
 
 ```sh
 bin/kafka-producer-perf-test.sh --topic rep_perf_test \
@@ -57,9 +57,7 @@ compression.type=none \
 batch.size=8196
 ```
 
-## Producer Throughput: Three producer thread, 3x synchronous replication, no compression
-## ack=-1 is equivalent to all, this is the strongest gurantee where leader will wait for the 
-## full set of in-sync replicas to acknowledge the record
+## Producer Throughput: Three producer thread, 3x synchronous replication, no compression ack=-1 is equivalent to all, this is the strongest gurantee where leader will wait for the full set of in-sync replicas to acknowledge the record
 
 ```sh
 bin/kafka-producer-perf-test.sh --topic rep_perf_test \
