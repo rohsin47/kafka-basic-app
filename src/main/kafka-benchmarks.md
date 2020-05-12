@@ -6,93 +6,89 @@ Setup
 
 ```sh
 bin/kafka-topics.sh \
-  --zookeeper zookeeper.example.com:2181 \
+  --zookeeper localhost:2181 \
   --create \
-  --topic test-rep-one \
-  --partitions 6 \
-  --replication-factor 1
-bin/kafka-topics.sh \
-  --zookeeper zookeeper.example.com:2181 \
-  --create \
-  --topic test \
-  --partitions 6 --replication-factor 3
+  --topic rep_perf_test \
+  --partitions 3 --replication-factor 3
 ```
 
-Single thread, no replication
+# Producer Throughput: Three producer thread, no replication, no compression
+
+```sh
+bin/kafka-producer-perf-test.sh --topic rep_perf_test \
+--num-records 15000000 \
+--record-size 100 \
+--throughput 15000000 \
+--producer-props \
+acks=1 \
+bootstrap.servers=localhost:9092,localhost:9093,localhost:9094 \
+buffer.memory=67108864 \
+compression.type=none \
+batch.size=8196
+```
+
+# Producer Throughput: Three producer thread, no replication, zstandard compression
+
+```sh
+bin/kafka-producer-perf-test.sh --topic rep_perf_test \
+--num-records 15000000 \
+--record-size 100 \
+--throughput 15000000 \
+--producer-props \
+acks=1 \
+bootstrap.servers=localhost:9092,localhost:9093,localhost:9094 \
+buffer.memory=67108864 \
+compression.type=zstd \
+batch.size=8196
+```
+
+## Producer Throughput: Three producer thread, 3x asynchronous replication, no compression
+
+```sh
+bin/kafka-producer-perf-test.sh --topic rep_perf_test \
+--num-records 15000000 \
+--record-size 100 \
+--throughput 15000000 \
+--producer-props \
+acks=1 \
+bootstrap.servers=localhost:9092,localhost:9093,localhost:9094 \
+buffer.memory=67108864 \
+compression.type=none \
+batch.size=8196
+```
+
+## Producer Throughput: Three producer thread, 3x synchronous replication, no compression
+## ack=-1 is equivalent to all, this is the strongest gurantee where leader will wait for the 
+## full set of in-sync replicas to acknowledge the record
+
+```sh
+bin/kafka-producer-perf-test.sh --topic rep_perf_test \
+--num-records 15000000 \
+--record-size 100 \
+--throughput 15000000 \
+--producer-props \
+acks=-1 \
+bootstrap.servers=localhost:9092,localhost:9093,localhost:9094 \
+buffer.memory=67108864 \
+compression.type=none \
+batch.size=8196
+```
+
+## Throughput Versus Stored Data
 
 ```sh
 bin/kafka-producer-perf-test.sh \
-  --topic test \
+  --topic rep_perf_test \
   --num-records 50000000 \
   --record-size 100 \
   --throughput -1 \
   --producer-props acks=1 \
-  bootstrap.servers=kafka.example.com:9092 \
-  buffer.memory=67108864 \
+  bootstrap.servers=localhost:9092,localhost:9093,localhost:9094 \
+  buffer.memory=67108864 
   batch.size=8196
 ```
 
-Single-thread, async 3x replication
-
-```sh
-bin/kafk-topics.sh \
-  --zookeeper zookeeper.example.com:2181 \
-  --create \
-  --topic test \
-  --partitions 6 \
-  --replication-factor 3
-bin/kafka-producer-perf-test.sh \
-  --topic test \
-  --num-records 50000000 \
-  --record-size 100 \
-  --throughput -1 \
-  --producer-props acks=1 \
-  bootstrap.servers=kafka.example.com:9092 \
-  buffer.memory=67108864 \
-  batch.size=8196
-```
-
-Single-thread, sync 3x replication
-
-```sh
-bin/kafka-producer-perf-test.sh \
-  --topic test \
-  --num-records 50000000 \
-  --record-size 100 \
-  --throughput -1 \
-  --producer-props acks=1 \
-  bootstrap.servers=kafka.example.com:9092 \
-  buffer.memory=67108864 batch.size=64000
-```
-
-Three Producers, 3x async replication
-
-```sh
-bin/kafka-producer-perf-test.sh \
-  --topic test \
-  --num-records 50000000 \
-  --record-size 100 \
-  --throughput -1 \
-  --producer-props acks=1 \
-  bootstrap.servers=kafka.example.com:9092 \
-  buffer.memory=67108864 \
-  batch.size=8196
-```
-
-Throughput Versus Stored Data
-
-```sh
-bin/kafka-producer-perf-test.sh \
-  --topic test \
-  --num-records 50000000 \
-  --record-size 100 \
-  --throughput -1 \
-  --producer-props acks=1 \
-  bootstrap.servers=kafka.example.com:9092 \
-  buffer.memory=67108864 batch.size=8196
-```
-
-Effect of message size
+## Effect of message size
 
 ```sh
 for i in 10 100 1000 10000 100000; do
@@ -142,28 +138,4 @@ bin/kafka-run-class.sh \
   kafka.example.com:9092 \
   zookeeper.example.com:2181 \
   test 5000
-```
-
-## Producer and consumer
-
-```sh
-bin/kafka-run-class.sh \
-  org.apache.kafka.tools.ProducerPerformance \
-bin/kafka-producer-perf-test.sh \
-  --topic test \
-  --num-records 50000000 \
-  --record-size 100 \
-  --throughput -1 \
-  --producer-props acks=1 \
-  bootstrap.servers=kafka.example.com:9092 \
-  buffer.memory=67108864 \
-  batch.size=8196
-```
-
-```sh
-bin/kafka-consumer-perf-test.sh \
-  --zookeeper zookeeper.example.com:2181 \
-  --messages 50000000 \
-  --topic test \
-  --threads 1
 ```
